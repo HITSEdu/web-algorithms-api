@@ -2,7 +2,7 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from alghs.aStar import a_star, create_random
+from algorithms.aStar import a_star, create_random
 
 app = FastAPI()
 
