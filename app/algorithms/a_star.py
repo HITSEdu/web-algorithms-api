@@ -69,3 +69,16 @@ def a_star(grid, start, end):
                 heapq.heappush(open_set, (f_score[neighbor], neighbor))
 
     return None
+
+
+def find_path(pixels):
+    start, end = None, None
+
+    for row_idx, row in enumerate(pixels):
+        for col_idx, cell in enumerate(row):
+            if cell == 2:
+                start = (row_idx, col_idx)
+            elif cell == 3:
+                end = (row_idx, col_idx)
+
+    return a_star(pixels, start, end) or []
