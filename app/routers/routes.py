@@ -16,7 +16,8 @@ async def generate_grid(
 
 @router.post("/find-path")
 async def find_path_route(data: Canvas):
-    return {"path": find_path(data.pixels)}
+    path, history = find_path(data.pixels)
+    return {"path": path, "history": history}
 
 
 @router.post("/recognize")

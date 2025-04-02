@@ -37,6 +37,7 @@ def a_star(grid, start, end):
     came_from = {}
     g_score = {start: 0}
     f_score = {start: heuristic(start, end)}
+    history = []
 
     while open_set:
         _, current = heapq.heappop(open_set)
@@ -49,7 +50,7 @@ def a_star(grid, start, end):
             path.append(start)
             path.reverse()
             print(path)
-            return path
+            return path, history
 
         for dx, dy in DIRECTIONS:
             neighbor = (current[0] + dx, current[1] + dy)
@@ -67,8 +68,9 @@ def a_star(grid, start, end):
                 g_score[neighbor] = tentative_g_score
                 f_score[neighbor] = tentative_g_score + heuristic(neighbor, end)
                 heapq.heappush(open_set, (f_score[neighbor], neighbor))
+                history.append(neighbor)
 
-    return None
+    return [], history
 
 
 def find_path(pixels):
@@ -81,4 +83,4 @@ def find_path(pixels):
             elif cell == 3:
                 end = (row_idx, col_idx)
 
-    return a_star(pixels, start, end) or []
+    return a_star(pixels, start, end)
