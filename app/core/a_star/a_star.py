@@ -11,8 +11,8 @@ def create_random(size: int, fullness):
     while end == start:
         end = random.randint(0, size - 1), random.randint(0, size - 1)
 
-    grid = [[random.choices([0, 1], weights=[1 - wall_chance, wall_chance])[0] for _ in range(size)] for _ in
-            range(size)]
+    grid = [[random.choices([0, 1], weights=[1 - wall_chance, wall_chance])[0]
+             for _ in range(size)] for _ in range(size)]
 
     grid[start[0]][start[1]] = 2
     grid[end[0]][end[1]] = 3

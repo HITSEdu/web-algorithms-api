@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Query
 from app.models.canvas import Canvas
-from app.algorithms.clusterization.clusterization import clusterization_method
-from app.algorithms.clusterization.generate_grid import generate
+from app.core.clusterization.clusterization import clusterization_method
+from app.core.clusterization.generate_grid import generate
 
-clusterization_router = APIRouter(
+
+tags = ["Clusterization"]
+router_clusterization = APIRouter(
     prefix="/clusterization"
 )
 
 
-@clusterization_router.get("/generate")
+@router_clusterization.get("/generate", tags=tags)
 async def generate_grid(
         size: int = Query(...),
         fullness: int = Query(...)
@@ -16,7 +18,7 @@ async def generate_grid(
     return {'grid': generate(size, fullness)}
 
 
-@clusterization_router.post("/clusterize")
+@router_clusterization.post("/clusterize", tags=tags)
 async def clusterize(canvas: Canvas):
     data = clusterization_method(canvas=canvas.pixels);
     return {
@@ -24,5 +26,3 @@ async def clusterize(canvas: Canvas):
         "canvas": data["canvas"],
         "c": data["c"],
         }
-
-# uvicorn main:app --host 0.0.0.0 --port 80

@@ -1,7 +1,7 @@
 import random
 from typing import List
 from enum import Enum
-from app.models.canvas import Canvas
+from app.models.color_type import ColorType
 
 
 class Point:
@@ -14,15 +14,6 @@ class PointType(Enum):
     DEFAULT = 0
     WALL = 1
     CENTER = 2
-
-
-class ColorType(Enum):
-    ORANGE = 10
-    BLUE = 11
-    GREEN = 12
-    PURPLE = 13
-    YELLOW = 14
-    PINK = 15
 
 
 def find_points(canvas: List[List[int]]) -> List[Point]:
@@ -56,7 +47,8 @@ def update_centroids(clusters: List[List[Point]], points: List[Point]) -> List[P
             new_centroids.append(closest_point)
         else:
             if largest_cluster:
-                new_centroids.append(random.choice(largest_cluster) if largest_cluster else random.choice(points))
+                new_centroids.append(random.choice(largest_cluster)
+                                     if largest_cluster else random.choice(points))
             else:
                 new_centroids.append(Point(0, 0))
 
@@ -77,15 +69,14 @@ def calculate_silhouette(clusters: List[List[Point]]) -> float:
             continue
 
         for point in cluster:
-            a = sum(euclidean(point, other) for other in cluster if other != point) / (len(cluster) - 1) if len(cluster) > 1 else 0
+            a = sum(euclidean(point, other) for other in cluster
+                    if other != point) / (len(cluster) - 1) if len(cluster) > 1 else 0
             b = float("inf")
-            
             for j in range(num_clusters):
                 if i == j or not clusters[j]:
                     continue
                 avg_dist = sum(euclidean(point, other) for other in clusters[j]) / len(clusters[j])
                 b = min(b, avg_dist)
-            
             s = (b - a) / max(a, b)
             scores.append(s)
 
@@ -93,15 +84,15 @@ def calculate_silhouette(clusters: List[List[Point]]) -> float:
 
 
 def clusterization(canvas: List[List[int]], k: int) -> List[List[Point]]:
-    EPS = 32
+    eps = 32
     points = find_points(canvas)
     centroids = init_centroids(k, len(canvas))
     clusters: List[List[Point]] = []
 
-    for _ in range(EPS):
+    for _ in range(eps):
         clusters = [[] for _ in range(k)]
         for point in points:
-            distance = min([euclidean(point, center) for center in centroids])
+            distance = min(euclidean(point, center) for center in centroids)
             cluster_idx = [euclidean(point, center) for center in centroids].index(distance)
             clusters[cluster_idx].append(point)
         centroids = update_centroids(clusters, points)
@@ -135,9 +126,8 @@ def build_canvas(canvas: List[List[int]], k: int, clusters: List[List[Point]]) -
 
 
 def clusterization_method(canvas: List[List[int]]):
-    K = range(2, 6 + 1)
     m = {}
-    for k in K:
+    for k in range(2, 6 + 1):
         clusters = clusterization(canvas, k)
         c = calculate_silhouette(clusters)
         new_canvas = build_canvas(canvas, k, clusters)
