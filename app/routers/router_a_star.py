@@ -2,7 +2,6 @@ from fastapi import APIRouter, Query
 from app.models.canvas import Canvas
 from app.core.a_star.a_star import create_random, find_path
 
-
 tags = ["A*"]
 router_a_star = APIRouter(
     prefix="/a"
