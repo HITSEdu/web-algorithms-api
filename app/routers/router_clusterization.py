@@ -20,9 +20,13 @@ async def generate_grid(
 
 @router_clusterization.post("/clusterize", tags=tags)
 async def clusterize(canvas: Canvas):
-    data = clusterization_method(canvas=canvas.pixels);
+    try:
+        status = 1
+        data = clusterization_method(canvas=canvas.pixels);
+    except Exception as e:
+        status = -1
+        data = {"error": str(e)}
     return {
-        "k": data["k"],
-        "canvas": data["canvas"],
-        "c": data["c"],
+        "status" : status,
+        "data" : data,
         }

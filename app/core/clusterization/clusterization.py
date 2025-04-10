@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import List, Tuple
 from enum import Enum
 from app.models.color_type import ColorType
 
@@ -16,6 +16,10 @@ class PointType(Enum):
     CENTER = 2
 
 
+def euclidean(p1: Point, p2: Point) -> int:
+    return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
+
+
 def find_points(canvas: List[List[int]]) -> List[Point]:
     n: int = len(canvas)
     points: List[Point] = []
@@ -26,13 +30,21 @@ def find_points(canvas: List[List[int]]) -> List[Point]:
     return points
 
 
-def init_centroids(k: int, n: int) -> List[Point]:
-    centroids = [
-        Point(0, 0), Point(n - 1, n - 1),
-        Point(n - 1, 0), Point(0, n - 1),
-        Point(0, n//2), Point(n//2, 0),
-        Point(n, n//2), Point(n//2, n)]
-    return centroids[:k]
+def init_centroids(k: int, points: List[Point]) -> List[Point]:
+    centroids = []
+    centroids.append(random.choice(points))
+
+    for _ in range(1, k):
+        distances = []
+        for p in points:
+            min_dist = min(euclidean(p, c) for c in centroids)
+            distances.append(min_dist ** 2)
+        total = sum(distances)
+        probs = [d / total for d in distances if total]
+        next_point = random.choices(points, weights=probs, k=1)[0]
+        centroids.append(next_point)
+
+    return centroids
 
 
 def update_centroids(clusters: List[List[Point]], points: List[Point]) -> List[Point]:
@@ -53,10 +65,6 @@ def update_centroids(clusters: List[List[Point]], points: List[Point]) -> List[P
                 new_centroids.append(Point(0, 0))
 
     return new_centroids
-
-
-def euclidean(p1: Point, p2: Point) -> int:
-    return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
 
 
 def calculate_silhouette(clusters: List[List[Point]]) -> float:
@@ -83,10 +91,10 @@ def calculate_silhouette(clusters: List[List[Point]]) -> float:
     return sum(scores) / len(scores) if scores else -1
 
 
-def clusterization(canvas: List[List[int]], k: int) -> List[List[Point]]:
+def clusterization(canvas: List[List[int]], k: int) -> Tuple[List[List[Point]], List[Point]]:
     eps = 32
     points = find_points(canvas)
-    centroids = init_centroids(k, len(canvas))
+    centroids = init_centroids(k, points)
     clusters: List[List[Point]] = []
 
     for _ in range(eps):
@@ -95,19 +103,14 @@ def clusterization(canvas: List[List[int]], k: int) -> List[List[Point]]:
             distance = min(euclidean(point, center) for center in centroids)
             cluster_idx = [euclidean(point, center) for center in centroids].index(distance)
             clusters[cluster_idx].append(point)
+        centroids = []
         centroids = update_centroids(clusters, points)
 
-
-    for center in centroids:
-        canvas[center.x][center.y] = PointType.WALL.value
-
-    for center in centroids:
-        canvas[center.x][center.y] = PointType.CENTER.value
-
-    return clusters
+    return clusters, centroids
 
 
-def build_canvas(canvas: List[List[int]], k: int, clusters: List[List[Point]]) -> List[List[int]]:
+def build_canvas(canvas: List[List[int]], k: int, clusters: List[List[Point]],
+                 centroids: List[List[Point]]) -> List[List[int]]:
     n = len(canvas)
     colors: List[ColorType] = [ColorType.ORANGE, ColorType.BLUE, ColorType.GREEN,
                                ColorType.PURPLE, ColorType.YELLOW, ColorType.PINK]
@@ -117,20 +120,33 @@ def build_canvas(canvas: List[List[int]], k: int, clusters: List[List[Point]]) -
         for cluster in clusters[color]:
             matrix[cluster.x][cluster.y] = colors[color].value
 
-    # for x in range(n):
-    #     for y in range(n):
-    #         if canvas[x][y] == PointType.CENTER.value:
-    #             matrix[x][y] = PointType.CENTER.value
+    for center in centroids:
+        matrix[center.x][center.y] = int(f"{matrix[center.x][center.y]}{PointType.CENTER.value}")
     new_canvas = matrix
     return new_canvas
 
 
+def check_canvas(canvas: List[List[int]]) -> bool:
+    n = len(canvas)
+    for x in range(n):
+        for y in range(n):
+            if canvas[x][y] != 1:
+                return True
+    return False
+
+
 def clusterization_method(canvas: List[List[int]]):
+    if not check_canvas(canvas):
+        return {
+            "k": 2,
+            "canvas": [[0] * len(canvas) for _ in range(len(canvas))],
+            "c": 0,
+        }
     m = {}
     for k in range(2, 6 + 1):
-        clusters = clusterization(canvas, k)
+        clusters, centriods = clusterization(canvas, k)
         c = calculate_silhouette(clusters)
-        new_canvas = build_canvas(canvas, k, clusters)
+        new_canvas = build_canvas(canvas, k, clusters, centriods)
         m.update({k: {
             "k": k,
             "canvas": new_canvas,
