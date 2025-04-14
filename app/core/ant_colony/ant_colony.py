@@ -72,30 +72,35 @@ def ant_algorithm(grid, num_ants=50, iterations=100):
     return best_path
 
 def simulate_ant(grid, pheromone, start, food_sources):
-    best_total_path = []
-    best_total_len = float('inf')
+    unvisited = set(food_sources)
+    current = start
+    path = []
+    total_len = 0
 
-    for perm in permutations(food_sources):
-        sequence = [start] + list(perm)
-        total_path = []
-        total_len = 0
-        failed = False
-        for i in range(len(sequence) - 1):
-            p1, p2 = sequence[i], sequence[i+1]
-            subpath = bfs_path(grid, pheromone, p1, p2)
-            if not subpath:
-                failed = True
-                break
-            if total_path and subpath[0] == total_path[-1]:
-                subpath = subpath[1:]
-            total_path += subpath
-            total_len += len(subpath)
-        if not failed and total_len < best_total_len:
-            best_total_len = total_len
-            best_total_path = total_path
-            best_sequence = sequence
+    while unvisited:
+        next_point = min(unvisited, key=lambda p: abs(current[0] - p[0]) + abs(current[1] - p[1]))
+        subpath = bfs_path(grid, pheromone, current, next_point)
+        if not subpath:
+            return [], float('inf')
 
-    return best_total_path, best_total_len
+        if path and subpath[0] == path[-1]:
+            subpath = subpath[1:]
+
+        path.extend(subpath)
+        total_len += len(subpath)
+        current = next_point
+        unvisited.remove(next_point)
+
+    subpath = bfs_path(grid, pheromone, current, start)
+    if not subpath:
+        return [], float('inf')
+
+    if path and subpath[0] == path[-1]:
+        subpath = subpath[1:]
+    path.extend(subpath)
+    total_len += len(subpath)
+
+    return path, total_len
 
 def bfs_path(grid, pheromone, start, goal):
     from heapq import heappush, heappop
