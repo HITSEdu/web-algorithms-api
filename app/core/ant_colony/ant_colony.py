@@ -1,7 +1,7 @@
 import random
-from itertools import permutations
 import numpy as np
 from copy import deepcopy
+from heapq import heappush, heappop
 
 def create_random_ant_grid(size: int, fullness):
     start = random.randint(0, size - 1), random.randint(0, size - 1)
@@ -103,7 +103,6 @@ def simulate_ant(grid, pheromone, start, food_sources):
     return path, total_len
 
 def bfs_path(grid, pheromone, start, goal):
-    from heapq import heappush, heappop
     visited = set()
     heap = [(0, start, [])]
     while heap:
