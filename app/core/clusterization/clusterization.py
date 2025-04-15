@@ -91,7 +91,7 @@ def calculate_silhouette(clusters: List[List[Point]]) -> float:
     return sum(scores) / len(scores) if scores else -1
 
 
-def clusterization(canvas: List[List[int]], k: int) -> Tuple[List[List[Point]], List[Point]]:
+def k_means(canvas: List[List[int]], k: int) -> Tuple[List[List[Point]], List[Point]]:
     eps = 32
     points = find_points(canvas)
     centroids = init_centroids(k, points)
@@ -135,7 +135,7 @@ def check_canvas(canvas: List[List[int]]) -> bool:
     return False
 
 
-def clusterization_method(canvas: List[List[int]]):
+def clusterization(canvas: List[List[int]]):
     if not check_canvas(canvas):
         return {
             "k": 2,
@@ -144,7 +144,7 @@ def clusterization_method(canvas: List[List[int]]):
         }
     m = {}
     for k in range(2, 6 + 1):
-        clusters, centriods = clusterization(canvas, k)
+        clusters, centriods = k_means(canvas, k)
         c = calculate_silhouette(clusters)
         new_canvas = build_canvas(canvas, k, clusters, centriods)
         m.update({k: {
@@ -152,4 +152,4 @@ def clusterization_method(canvas: List[List[int]]):
             "canvas": new_canvas,
             "c": c,
         }})
-    return m[max(m, key=lambda k: m[k]["c"])]
+    return m

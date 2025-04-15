@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from app.models.canvas import Canvas
-from app.core.clusterization.clusterization import clusterization_method
+from app.core.clusterization.clusterization import clusterization
 from app.core.clusterization.generate_grid import generate
 
 
@@ -22,7 +22,7 @@ async def generate_grid(
 async def clusterize(canvas: Canvas):
     try:
         status = 1
-        data = clusterization_method(canvas=canvas.pixels);
+        data = clusterization(canvas=canvas.pixels);
     except Exception as e:
         status = -1
         data = {"error": str(e)}
