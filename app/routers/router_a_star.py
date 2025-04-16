@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query
 from app.models.canvas import Canvas
-from app.core.a_star.a_star import create_random, find_path
+from app.core.a_star.a_star import find_path
+from app.core.a_star.generate_maze import generate_maze
 
 tags = ["A*"]
 router_a_star = APIRouter(
@@ -13,7 +14,7 @@ async def generate_grid(
         size: int = Query(...),
         fullness: int = Query(...)
 ):
-    return {'grid': create_random(size, fullness)}
+    return {'grid': generate_maze(size, fullness)}
 
 
 @router_a_star.post("/find-path", tags=tags)

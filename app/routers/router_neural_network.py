@@ -10,5 +10,9 @@ router_neural_network = APIRouter(
 
 
 @router_neural_network.post("/recognize", tags=tags)
-async def recognize_route(data: Canvas):
-    return {"digit": predict_digit(data.pixels)}
+async def recognize_route(canvas: Canvas):
+    digit, confidence = predict_digit(canvas)
+    return {
+        "digit": digit,
+        "confidence" : confidence,
+        }

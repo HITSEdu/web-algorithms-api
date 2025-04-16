@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query
 from app.models.canvas import Canvas
 from app.core.clusterization.clusterization import clusterization
-from app.core.clusterization.generate_grid import generate
+from app.core.clusterization.generate_clusterization_grid import generate
 
 
 tags = ["Clusterization"]

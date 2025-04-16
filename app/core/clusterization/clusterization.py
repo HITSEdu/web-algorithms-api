@@ -1,23 +1,10 @@
 import random
 from typing import List, Tuple
-from enum import Enum
 from app.models.color_type import ColorType
-
-
-class Point:
-    def __init__(self, x: int, y: int):
-        self.x = x
-        self.y = y
-
-
-class PointType(Enum):
-    DEFAULT = 0
-    WALL = 1
-    CENTER = 2
-
-
-def euclidean(p1: Point, p2: Point) -> int:
-    return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
+from app.models.point import Point
+from app.models.point_type import PointType
+from app.core.clusterization.euclidean import euclidean
+from app.core.clusterization.silhouette_method import calculate_silhouette
 
 
 def find_points(canvas: List[List[int]]) -> List[Point]:
@@ -43,14 +30,12 @@ def init_centroids(k: int, points: List[Point]) -> List[Point]:
         probs = [d / total for d in distances if total]
         next_point = random.choices(points, weights=probs, k=1)[0]
         centroids.append(next_point)
-
     return centroids
 
 
 def update_centroids(clusters: List[List[Point]], points: List[Point]) -> List[Point]:
     new_centroids: List[Point] = []
     largest_cluster = max(clusters, key=len) if clusters else []
-
     for cluster in clusters:
         if cluster:
             x = sum(p.x for p in cluster) // len(cluster)
@@ -63,32 +48,7 @@ def update_centroids(clusters: List[List[Point]], points: List[Point]) -> List[P
                                      if largest_cluster else random.choice(points))
             else:
                 new_centroids.append(Point(0, 0))
-
     return new_centroids
-
-
-def calculate_silhouette(clusters: List[List[Point]]) -> float:
-    scores = []
-    num_clusters = len(clusters)
-
-    for i in range(num_clusters):
-        cluster = clusters[i]
-        if len(cluster) < 2:
-            continue
-
-        for point in cluster:
-            a = sum(euclidean(point, other) for other in cluster
-                    if other != point) / (len(cluster) - 1) if len(cluster) > 1 else 0
-            b = float("inf")
-            for j in range(num_clusters):
-                if i == j or not clusters[j]:
-                    continue
-                avg_dist = sum(euclidean(point, other) for other in clusters[j]) / len(clusters[j])
-                b = min(b, avg_dist)
-            s = (b - a) / max(a, b)
-            scores.append(s)
-
-    return sum(scores) / len(scores) if scores else -1
 
 
 def k_means(canvas: List[List[int]], k: int) -> Tuple[List[List[Point]], List[Point]]:
@@ -105,7 +65,6 @@ def k_means(canvas: List[List[int]], k: int) -> Tuple[List[List[Point]], List[Po
             clusters[cluster_idx].append(point)
         centroids = []
         centroids = update_centroids(clusters, points)
-
     return clusters, centroids
 
 
@@ -130,7 +89,7 @@ def check_canvas(canvas: List[List[int]]) -> bool:
     n = len(canvas)
     for x in range(n):
         for y in range(n):
-            if canvas[x][y] != 1:
+            if canvas[x][y] != PointType.WALL.value:
                 return True
     return False
 
@@ -151,5 +110,6 @@ def clusterization(canvas: List[List[int]]):
             "k": k,
             "canvas": new_canvas,
             "c": c,
+            "type": "k-means",
         }})
     return m
