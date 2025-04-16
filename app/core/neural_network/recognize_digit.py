@@ -18,5 +18,6 @@ def resize_canvas(canvas):
 def predict_digit(canvas):
     predict = model.predict(resize_canvas(canvas.pixels), verbose=0)[0]
     digit = int(np.argmax(predict))
-    confidence = float(np.max(predict))
-    return digit, confidence
+    predict *= 100
+    predict = np.round(predict, 0).astype(int)
+    return digit, predict.tolist()
