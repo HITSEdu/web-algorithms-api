@@ -85,24 +85,18 @@ def build_canvas(canvas: List[List[int]], k: int, clusters: List[List[Point]],
     return new_canvas
 
 
-def check_canvas(canvas: List[List[int]]) -> bool:
-    n = len(canvas)
-    for x in range(n):
-        for y in range(n):
-            if canvas[x][y] != PointType.WALL.value:
-                return True
-    return False
-
-
 def clusterization(canvas: List[List[int]]):
-    if not check_canvas(canvas):
+    points = find_points(canvas)
+    if len(points) < 2:
         return {
             "k": 2,
             "canvas": [[0] * len(canvas) for _ in range(len(canvas))],
             "c": 0,
-        }
+            "type": "k-means",
+        }, -1
     m = {}
-    for k in range(2, 6 + 1):
+    n = min(6, len(points))
+    for k in range(2, n + 1):
         clusters, centriods = k_means(canvas, k)
         c = calculate_silhouette(clusters)
         new_canvas = build_canvas(canvas, k, clusters, centriods)
@@ -112,4 +106,4 @@ def clusterization(canvas: List[List[int]]):
             "c": c,
             "type": "k-means",
         }})
-    return m
+    return m, 1

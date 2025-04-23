@@ -19,5 +19,8 @@ async def generate_grid(
 
 @router_a_star.post("/find-path", tags=tags)
 async def find_path_route(data: Canvas):
-    path, history = find_path(data.pixels)
+    try:
+        path, history = find_path(data.pixels)
+    except Exception:
+        return {"path": [], "history": []}
     return {"path": path, "history": history}
