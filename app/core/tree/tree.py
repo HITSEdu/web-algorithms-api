@@ -51,85 +51,75 @@ def best_split(data):
 def build_tree(data, feature_names):
     labels = [row[-1] for row in data]
     if labels.count(labels[0]) == len(labels):
-        return labels[0]
-
-    if len(feature_names) == 0 or len(data[0]) == 1:
-        return Counter(labels).most_common(1)[0][0]
+        return {"type": "leaf", "value": labels[0]}
 
     col, val = best_split(data)
     if col is None:
-        return Counter(labels).most_common(1)[0][0]
+        return {"type": "leaf", "value": Counter(labels).most_common(1)[0][0]}
+
+    question = {
+        "index": col,
+        "feature": feature_names[col],
+        "value": val,
+        "numeric": is_numeric(val)
+    }
 
     left, right = split_data(data, col, val)
 
-    question = {
-        "feature": feature_names[col],
-        "value": val,
-        "numeric": is_numeric(val),
-    }
-
-    remaining_features = feature_names[:col] + feature_names[col + 1:]
-
-    left_data = [[row[i] for i in range(len(row)) if i != col] for row in left]
-    right_data = [[row[i] for i in range(len(row)) if i != col] for row in right]
-
     return {
+        "type": "node",
         "question": question,
-        "true_branch": build_tree(left_data, remaining_features),
-        "false_branch": build_tree(right_data, remaining_features),
+        "true_branch": build_tree(left, feature_names),
+        "false_branch": build_tree(right, feature_names),
     }
 
 
-def classify(tree, feature_names, sample, path=None):
+def classify(tree, sample, path=None):
     if path is None:
         path = []
 
-    if not isinstance(tree, dict):
+    if tree["type"] == "leaf":
+        path.append({
+            "name": tree["value"],
+            "value": tree["value"],
+        })
+
         return {
-            "result": tree,
+            "result": tree["value"],
             "path": path
         }
 
     q = tree["question"]
-    feature_index = feature_names.index(q["feature"])
-    val = sample[feature_index]
+    val = sample[q["index"]]
 
     try:
         val = float(val) if q["numeric"] else val
     except:
-        path.append({
-            "feature": q["feature"],
-            "value": val,
-            "operator": "<=" if q["numeric"] else "==",
-            "passed": "Ошибка приведения типов"
-        })
         return {
             "result": "Неверные данные",
-            "path": path
+            "path": []
         }
 
-    compare = val <= float(q["value"]) if q["numeric"] else val == q["value"]
+    passed = val <= float(q["value"]) if q["numeric"] else val == q["value"]
     operator = "<=" if q["numeric"] else "=="
 
     path.append({
+        "name": f"{q['feature']} {operator} {q['value']}",
         "feature": q["feature"],
         "value": val,
         "operator": operator,
         "comparison_to": q["value"],
-        "passed": compare
+        "passed": passed
     })
 
-    branch = tree["true_branch"] if compare else tree["false_branch"]
+    branch = tree["true_branch"] if passed else tree["false_branch"]
 
-    new_sample = sample[:feature_index] + sample[feature_index + 1:]
-    new_features = feature_names[:feature_index] + feature_names[feature_index + 1:]
-
-    return classify(branch, new_features, new_sample, path)
+    return classify(branch, sample, path)
 
 
 def to_json(tree):
-    if not isinstance(tree, dict):
-        return {"type": "leaf", "value": tree}
+    if tree["type"] == "leaf":
+        return {"type": "leaf", "value": tree["value"]}
 
     q = tree["question"]
 

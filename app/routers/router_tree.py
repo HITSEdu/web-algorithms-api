@@ -20,12 +20,13 @@ async def build_router(data: CSVData):
         if len(reader) < 2:
             raise ValueError("Недостаточно данных")
 
+        session_id = data.session_id
         header = reader[0]
         data = reader[1:]
         tree = build_tree(data, header[:-1])
 
-        cached_trees[data.session_id] = tree
-        cached_headers[data.session_id] = header
+        cached_trees[session_id] = tree
+        cached_headers[session_id] = header
 
         tree_json = to_json(tree)
         return {"tree": tree_json}
@@ -47,10 +48,9 @@ async def classify_router(data: CSVData):
         raise HTTPException(status_code=400, detail="Дерево не найдено!")
 
     tree = cached_trees[session_id]
-    headers = cached_headers[session_id]
 
     results = [
-        classify(tree, headers, row)
+        classify(tree, row)
         for row in reader
     ]
 
