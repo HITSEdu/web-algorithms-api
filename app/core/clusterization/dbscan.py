@@ -26,7 +26,6 @@ def dbscan(points, eps: float, min_pts: int) -> Tuple[List[List[Point]], List[Po
     clusters: List[List[Point]] = []
     visited: set = set()
     noise: List[Point] = []
-
     for point in points:
         if point in visited:
             continue
@@ -38,5 +37,4 @@ def dbscan(points, eps: float, min_pts: int) -> Tuple[List[List[Point]], List[Po
             new_cluster: List[Point] = []
             expand_cluster(points, neighbors, new_cluster, visited, eps, min_pts)
             clusters.append(new_cluster)
-
     return clusters, noise

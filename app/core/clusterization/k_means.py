@@ -2,6 +2,7 @@ import random
 from typing import List, Tuple
 from app.core.clusterization.euclidean import euclidean
 from app.models.point import Point
+from app.utils.config import config
 
 
 def init_centroids(k: int, points: List[Point]) -> List[Point]:
@@ -27,7 +28,7 @@ def update_centroids(clusters: List[List[Point]], points: List[Point]) -> List[P
         if cluster:
             x = sum(p.x for p in cluster) // len(cluster)
             y = sum(p.y for p in cluster) // len(cluster)
-            closest_point = min(points, key=lambda p: euclidean(Point(x, y), p))
+            closest_point = min(points, key=lambda p, x=x, y=y: euclidean(Point(x, y), p))
             new_centroids.append(closest_point)
         else:
             if largest_cluster:
@@ -39,11 +40,10 @@ def update_centroids(clusters: List[List[Point]], points: List[Point]) -> List[P
 
 
 def k_means(points: List[Point], k: int) -> Tuple[List[List[Point]], List[Point]]:
-    eps = 32
     centroids = init_centroids(k, points)
     clusters: List[List[Point]] = []
 
-    for _ in range(eps):
+    for _ in range(config.clusterization.EPS):
         clusters = [[] for _ in range(k)]
         for point in points:
             distance = min(euclidean(point, center) for center in centroids)

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class ImageData(BaseModel):
+class ImageDataDTO(BaseModel):
     pixels: list[int]

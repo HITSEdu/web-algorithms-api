@@ -2,5 +2,5 @@ from typing import List
 from pydantic import BaseModel
 
 
-class Canvas(BaseModel):
+class CanvasDTO(BaseModel):
     pixels: List[List[int]]

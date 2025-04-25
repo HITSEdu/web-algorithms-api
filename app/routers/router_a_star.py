@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query
-from app.models.canvas import Canvas
+from app.models.canvas_dto import CanvasDTO
 from app.core.a_star.a_star import find_path
 from app.core.a_star.generate_maze import generate_maze
 
@@ -18,7 +18,7 @@ async def generate_grid(
 
 
 @router_a_star.post("/find-path", tags=tags)
-async def find_path_route(data: Canvas):
+async def find_path_route(data: CanvasDTO):
     try:
         path, history = find_path(data.pixels)
     except Exception:

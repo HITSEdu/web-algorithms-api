@@ -5,6 +5,7 @@ from app.models.point_type import PointType
 from app.core.clusterization.silhouette_method import calculate_silhouette
 from app.core.clusterization.k_means import k_means
 from app.core.clusterization.dbscan import dbscan
+from app.utils.config import config
 
 
 def find_points(canvas: List[List[int]]) -> List[Point]:
@@ -32,9 +33,9 @@ def build_canvas(n: int, k: int, clusters: List[List[Point]],
 
 
 def make_k_means_json(points: List[Point], size: int):
-    num_of_clusters = min(6, len(points))
+    num_of_clusters = min(config.clusterization.MAX_CLUSTERS, len(points))
     k_means_data = []
-    for k in range(2, num_of_clusters + 1):
+    for k in range(config.clusterization.MIN_CLUSTERS, num_of_clusters + 1):
         clusters, centriods = k_means(points, k)
         c = calculate_silhouette(clusters)
         new_canvas = build_canvas(size, k, clusters, centriods)
@@ -59,7 +60,7 @@ def make_dbscan_json(points: List[Point], size: int):
 def clusterization(canvas: List[List[int]]):
     points = find_points(canvas)
     size = len(canvas)
-    if len(points) < 2:
+    if len(points) < config.clusterization.MIN_CLUSTERS:
         return {}, -1
     response = {
         "k-means": make_k_means_json(points, size),

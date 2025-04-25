@@ -1,6 +1,6 @@
 import heapq
-
-DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+from app.utils.config import config
+from app.models.point_type import PointType
 
 
 def heuristic(a, b):
@@ -11,16 +11,11 @@ def heuristic(a, b):
 
 def a_star(grid, start, end):
     rows, cols = len(grid), len(grid[0])
-    open_set = []
+    open_set, history, came_from = [], [], {}
+    g_score, f_score = {start: 0}, {start: heuristic(start, end)}
     heapq.heappush(open_set, (0, start))
-    came_from = {}
-    g_score = {start: 0}
-    f_score = {start: heuristic(start, end)}
-    history = []
-
     while open_set:
         _, current = heapq.heappop(open_set)
-
         if current == end:
             path = []
             while current in came_from:
@@ -28,20 +23,14 @@ def a_star(grid, start, end):
                 current = came_from[current]
             path.append(start)
             path.reverse()
-            print(path)
             return path, history
-
-        for dx, dy in DIRECTIONS:
+        for dx, dy in config.a_star.DIRECTIONS:
             neighbor = (current[0] + dx, current[1] + dy)
-
             if not (0 <= neighbor[0] < rows and 0 <= neighbor[1] < cols):
                 continue
-
-            if grid[neighbor[0]][neighbor[1]] == 1:
+            if grid[neighbor[0]][neighbor[1]] == PointType.WALL.value:
                 continue
-
             tentative_g_score = g_score[current] + 1
-
             if tentative_g_score < g_score.get(neighbor, float('inf')):
                 came_from[neighbor] = current
                 g_score[neighbor] = tentative_g_score
@@ -53,11 +42,10 @@ def a_star(grid, start, end):
 
 def find_path(pixels):
     start, end = None, None
-
     for row_idx, row in enumerate(pixels):
         for col_idx, cell in enumerate(row):
-            if cell == 2:
+            if cell == PointType.CENTER.value:
                 start = (row_idx, col_idx)
-            elif cell == 3:
+            elif cell == PointType.END.value:
                 end = (row_idx, col_idx)
     return a_star(pixels, start, end)

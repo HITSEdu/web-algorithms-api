@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Query
-from app.models.canvas import Canvas
+from app.models.canvas_dto import CanvasDTO
 from app.core.clusterization.clusterization import clusterization
 from app.core.clusterization.generate_clusterization_grid import generate
-
 
 tags = ["Clusterization"]
 router_clusterization = APIRouter(
@@ -19,9 +18,9 @@ async def generate_grid(
 
 
 @router_clusterization.post("/clusterize", tags=tags)
-async def clusterize(canvas: Canvas):
+async def clusterize(canvas: CanvasDTO):
     try:
-        data, status = clusterization(canvas=canvas.pixels);
+        data, status = clusterization(canvas.pixels);
     except Exception as e:
         status = -1
         data = {"error": str(e)}

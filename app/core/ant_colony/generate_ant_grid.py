@@ -3,7 +3,7 @@ from app.models.point_type import PointType
 from app.models.point import Point
 
 
-def generate_tsp_grid(size: int, fullness):
+def generate_ant_grid(size: int, fullness):
     length = size - 1
     start = Point(randint(0, length), randint(0, length))
     towns = [Point(randint(0, length), randint(0, length)) for _ in range(randint(1, 4))]
